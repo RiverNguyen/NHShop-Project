@@ -78,3 +78,30 @@ export const removeItemFromCart = async (req, res) => {
             .json({ message: error.message });
     }
 };
+export const updateProductQuantity = async (req, res) => {
+    const { userId, productId, quantity } = req.body;
+    try {
+        let cart = await Cart.findOne({ userId });
+        if (!cart) {
+            return res
+                .status(StatusCodes.NOT_FOUND)
+                .json({ message: "Không tìm thấy giỏ hàng !" });
+        }
+        const product = cart.products.find(
+            (item) => item.productId.toString() === productId
+        );
+
+        if (!product) {
+            return res
+                .status(StatusCodes.NOT_FOUND)
+                .json({ message: "Không tìm thấy sản phẩm trong giỏ hàng !" });
+        }
+        product.quantity = quantity;
+        await cart.save();
+        return res.status(StatusCodes.OK).json({ cart });
+    } catch (error) {
+        return res
+            .status(StatusCodes.BAD_REQUEST)
+            .json({ message: error.message });
+    }
+};
