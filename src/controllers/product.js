@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import Product from "../models/product";
+import Category from "../models/category";
 
 export const create = async (req, res) => {
     try {
@@ -12,7 +13,7 @@ export const create = async (req, res) => {
 
 export const getAll = async (req, res) => {
     try {
-        const products = await Product.find({});
+        const products = await Product.find({}).populate("category");
         if (products.length === 0) {
             return res
                 .status(StatusCodes.NOT_FOUND)
@@ -25,7 +26,9 @@ export const getAll = async (req, res) => {
 };
 export const getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).populate(
+            "category"
+        );
         if (product.length === 0) {
             return res
                 .status(StatusCodes.NOT_FOUND)

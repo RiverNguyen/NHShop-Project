@@ -2,6 +2,7 @@ import Joi from "joi";
 import { StatusCodes } from "http-status-codes";
 import User from "../models/user";
 import bcryptjs from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const signupSchema = Joi.object({
     name: Joi.string().min(3).max(30).required().messages({
@@ -56,5 +57,27 @@ export const signup = async (req, res) => {
     });
     return res.status(StatusCodes.CREATED).json({ user });
 };
-export const signin = (req, res) => {};
+
+export const signin = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+            messages: ["Email không tồn tại"],
+        });
+    }
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            messages: ["Mật khẩu không chính xác"],
+        });
+    }
+    const token = jwt.sign({ userId: user._id }, "giangdeptrai", {
+        expiresIn: "7d",
+    });
+    return res.status(StatusCodes.OK).json({
+        user,
+        token,
+    });
+};
 export const logout = (req, res) => {};
